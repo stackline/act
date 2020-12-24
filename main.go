@@ -2,6 +2,8 @@ package main
 
 // $ go get github.com/PuerkitoBio/goquery
 import (
+	"crypto/sha512"
+	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -126,6 +128,7 @@ func test(taskID string, sampleID string) {
 	}
 
 	inputFileName := taskID + ".cc"
+	checkSumFileName := fmt.Sprintf("./cache/%s.sha512sum.txt", inputFileName)
 	sampleInputFileName := fmt.Sprintf("./sample/%s-%02s-%s.txt", taskID, sampleID, "in")
 	sampleOutputFileName := fmt.Sprintf("./sample/%s-%02s-%s.txt", taskID, sampleID, "out")
 	executableFileName := fmt.Sprintf("./cache/%s.out", taskID)
@@ -144,20 +147,54 @@ func test(taskID string, sampleID string) {
 		log.Fatal(err)
 	}
 
-	// -std=gnu++17       Conform to the ISO 2017 C++ standard with GNU extensions.
-	// -Wall              Enable most warning messages.
-	// -Wextra            Print extra (possibly unwanted) warnings.
-	// -O<number>         Set optimization level to <number>.
-	// -D<macro>[=<val>]  Define a <macro> with <val> as its value.
-	//                    If just <macro> is given, <val> is taken to be 1.
-	//
-	// ref. https://atcoder.jp/contests/language-test-202001
-	_, err = exec.Command("g++-9", "-std=gnu++17", "-Wall", "-Wextra", "-O2",
-		"-DONLINE_JUDGE", "-o", executableFileName, inputFileName).Output()
+	// Checksum
+	content, err := ioutil.ReadFile(inputFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
+	sha512 := sha512.Sum512(content)
+	encodedStr := hex.EncodeToString(sha512[:])
 
+	needToCompile := true
+
+	// Check the exisitence of checksum
+	_, err = os.Stat(checkSumFileName)
+	if !os.IsNotExist(err) {
+		existenceCheckSum, err := ioutil.ReadFile(checkSumFileName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if encodedStr == string(existenceCheckSum) {
+			needToCompile = false
+		}
+	}
+
+	if needToCompile {
+		fmt.Println("aaa")
+		// Make checksum
+		err = ioutil.WriteFile(checkSumFileName, []byte(encodedStr), 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		/// Make binary file
+		// -std=gnu++17       Conform to the ISO 2017 C++ standard with GNU extensions.
+		// -Wall              Enable most warning messages.
+		// -Wextra            Print extra (possibly unwanted) warnings.
+		// -O<number>         Set optimization level to <number>.
+		// -D<macro>[=<val>]  Define a <macro> with <val> as its value.
+		//                    If just <macro> is given, <val> is taken to be 1.
+		//
+		// ref. https://atcoder.jp/contests/language-test-202001
+		_, err = exec.Command("g++-9", "-std=gnu++17", "-Wall", "-Wextra", "-O2",
+			"-DONLINE_JUDGE", "-o", executableFileName, inputFileName).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// Execute
 	cmd := exec.Command(executableFileName)
 
 	stdin, err := cmd.StdinPipe()
