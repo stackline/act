@@ -171,7 +171,7 @@ func test(taskID string, sampleID string) {
 	}
 
 	if needToCompile {
-		fmt.Println("aaa")
+		fmt.Println("compile " + inputFileName)
 		// Make checksum
 		err = ioutil.WriteFile(checkSumFileName, []byte(encodedStr), 0644)
 		if err != nil {
