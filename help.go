@@ -15,7 +15,7 @@ The commands are:
 	act get <content>
 		get sample data
 	act test <taskID> <sampleID>
-		hoge
+		test the task
 	act help
 		show help
 	`)
