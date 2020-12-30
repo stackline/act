@@ -30,7 +30,7 @@ func main() {
 		sampleID := flag.Arg(2)
 		test(taskID, sampleID)
 	default:
-		help()
+		fmt.Println(help())
 	}
 }
 

@@ -1,10 +1,7 @@
 package main
 
-import "fmt"
-
-func help() {
-	fmt.Println(
-		`Act is a tool for AtCoder.
+func help() string {
+	message := `Act is a tool for AtCoder.
 
 Usage:
 
@@ -18,5 +15,6 @@ The commands are:
 		test the task
 	act help
 		show help
-	`)
+	`
+	return message
 }
