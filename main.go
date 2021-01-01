@@ -23,8 +23,9 @@ func main() {
 
 	switch command {
 	case "get":
-		content := flag.Arg(1)
-		get(content)
+		arg := flag.Arg(1)
+		format := os.Getenv("ACT_URL_FORMAT")
+		get(arg, format)
 	case "test":
 		taskID := flag.Arg(1)
 		sampleID := flag.Arg(2)
@@ -35,11 +36,15 @@ func main() {
 }
 
 // ref. https://github.com/PuerkitoBio/goquery#examples
-func get(content string) {
-	fmt.Println("url: " + content)
+func get(arg string, format string) {
+	url, err := buildURL(arg, format)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("url: " + url)
 
 	// Request the HTML page
-	resp, err := http.Get(content)
+	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
